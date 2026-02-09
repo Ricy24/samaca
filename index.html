@@ -2,250 +2,264 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pilas pues, Samaca</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pórtese serio | Samaca</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Roboto+Mono:wght@700&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: #050505;
-            color: #00ff00; /* Verde matrix/terminal */
-            font-family: 'Space Mono', monospace;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #000;
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            height: 100dvh; /* Dynamic height para móviles */
             overflow: hidden;
         }
 
-        /* Pantalla de inicio cruda */
-        #loader {
+        /* Pantalla de Inicio - CRUCIAL PARA AUDIO EN IPHONE */
+        #entry-gate {
             position: fixed;
             inset: 0;
             background: #000;
-            z-index: 1000;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border: 5px solid #00ff00;
+            border: 10px solid #222;
         }
 
-        #loader h1 { font-size: 3rem; margin-bottom: 20px; text-align: center; }
-
-        .btn-random {
-            padding: 20px 40px;
-            background: #00ff00;
+        .pulse-btn {
+            background: #fff;
             color: #000;
-            font-weight: bold;
             border: none;
-            cursor: pointer;
+            padding: 20px 40px;
             font-family: 'Archivo Black', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Contenedor Principal */
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Texto Superior (Pequeño para dar espacio a la foto) */
+        .header-msg {
+            padding: 20px;
+            background: #111;
+            border-bottom: 2px solid #333;
+            text-align: center;
+        }
+
+        .header-msg h1 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.5rem;
+            color: #ff3e3e;
             text-transform: uppercase;
         }
 
-        /* Layout Principal */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 95vw;
-            height: 90vh;
-            gap: 10px;
-            padding: 10px;
-        }
-
-        /* Sección Izquierda: El "Regaño" */
-        .text-box {
-            border: 2px solid #333;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background: #111;
+        /* SLIDER GIGANTE */
+        .slider-container {
+            flex: 1; /* Ocupa todo el espacio restante */
             position: relative;
-        }
-
-        .text-box h1 {
-            font-family: 'Archivo Black', sans-serif;
-            font-size: clamp(3rem, 8vw, 5rem);
-            color: #fff;
-            line-height: 0.9;
-            margin-bottom: 1rem;
-        }
-
-        .text-box p { color: #888; font-size: 1.2rem; margin-bottom: 2rem; }
-
-        /* Slider */
-        .slider-box {
-            position: relative;
-            background: #000;
-            border: 2px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #050505;
             overflow: hidden;
         }
 
         .slide {
             position: absolute;
             inset: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: scale(0.5) rotate(10deg);
         }
 
         .slide.active {
             opacity: 1;
-            transform: scale(1) rotate(0deg);
+            visibility: visible;
         }
 
+        /* Foto ajustada para que se vea lo más grande posible sin cortarse */
         .slide img, .slide video {
-            max-width: 90%;
-            max-height: 80%;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
-            border: 5px solid white;
+            z-index: 5;
+            box-shadow: 0 0 30px rgba(255,255,255,0.1);
         }
 
-        .caption {
+        /* Efecto de fondo para que no se vea vacío a los lados */
+        .bg-ghost {
             position: absolute;
-            top: 10px;
-            background: #ff0055;
-            color: white;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            filter: blur(25px) brightness(0.3);
+            transform: scale(1.1);
+            z-index: 1;
+        }
+
+        /* Etiquetas Random / Meme */
+        .tag {
+            position: absolute;
+            top: 15%;
+            right: 5%;
+            background: #ffff00;
+            color: #000;
             padding: 5px 15px;
-            font-family: 'Archivo Black';
-            transform: rotate(-2deg);
+            font-weight: 900;
+            transform: rotate(15deg);
             z-index: 10;
+            font-size: 0.8rem;
+            font-family: 'Archivo Black';
         }
 
-        /* Flechas - Ahora no estorban */
-        .controls {
+        /* Flechas Invisibles pero funcionales (para no estorbar visualmente) */
+        .nav-zone {
             position: absolute;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 10px;
+            top: 0;
+            bottom: 0;
+            width: 25%;
             z-index: 100;
-        }
-
-        .arrow {
-            background: #fff;
-            border: none;
-            width: 50px;
-            height: 50px;
-            cursor: pointer;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        /* Botón que escapa */
-        #btn-no {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: transparent;
-            color: #444;
-            border: 1px solid #444;
-            padding: 5px 10px;
             cursor: pointer;
         }
+        .nav-left { left: 0; }
+        .nav-right { right: 0; }
 
-        @media (max-width: 800px) {
-            .main-grid { grid-template-columns: 1fr; }
-            .text-box { padding: 1rem; }
-            .text-box h1 { font-size: 3rem; }
+        /* Botón de perdón tipo random */
+        .footer-action {
+            padding: 15px;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-game {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Ajustes Mobile */
+        @media (max-width: 600px) {
+            .header-msg h1 { font-size: 1.2rem; }
+            .tag { top: 10%; font-size: 0.7rem; }
         }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <h1>OIGA,<br>SAMACA</h1>
-        <button class="btn-start btn-random" onclick="start()">ABRIR ESTA VAINA</button>
+    <div id="entry-gate" onclick="unlock()">
+        <p style="margin-bottom: 20px; color: #666;">SISTEMA DE DISCULPAS V1.0</p>
+        <button class="pulse-btn">INICIAR SESIÓN</button>
+        <p style="margin-top: 20px; font-size: 0.6rem;">CLICK PARA REPRODUCIR MEDIA</p>
     </div>
 
-    <div class="main-grid">
-        <div class="text-box">
-            <h1>LA <br>CAGUÉ.</h1>
-            <p>// Error 404: Dignidad no encontrada</p>
-            <p>Ya, mucha pendejada. Perdón por la falla de la otra vez, socio. Usted sabe que soy un animal, pero se le aprecia.</p>
-            
-            <div style="margin-top: 2rem;">
-                <button class="btn-random" onclick="alert('Así se habla, socio. ¡Ya cuadramos!')">TODO BIEN, PERDONADO</button>
-                <button id="btn-no">No te perdono</button>
-            </div>
+    <div class="wrapper">
+        <div class="header-msg">
+            <h1>LA CAGUÉ, SOCIO.</h1>
+            <p style="font-size: 0.7rem; color: #888;">// REINICIANDO AMISTAD CON SAMACA...</p>
         </div>
 
-        <div class="slider-box">
-            <div class="controls">
-                <button class="arrow" onclick="move(-1)">←</button>
-                <button class="arrow" onclick="move(1)">→</button>
-            </div>
+        <div class="slider-container">
+            <div class="nav-zone nav-left" onclick="move(-1)"></div>
+            <div class="nav-zone nav-right" onclick="move(1)"></div>
 
             <div class="slide active">
-                <div class="caption">MI CARA CUANDO LA CAGUÉ</div>
+                <div class="bg-ghost" style="background-image: url('media/image.png');"></div>
+                <div class="tag">ERROR CRÍTICO</div>
                 <img src="media/image.png" alt="1">
             </div>
 
             <div class="slide">
-                <div class="caption">NIVELES DE ARREPENTIMIENTO: 100%</div>
-                <video id="vid" loop muted playsinline>
+                <div class="bg-ghost"></div>
+                <div class="tag">VIDEO.MP4</div>
+                <video id="v" loop muted playsinline>
                     <source src="media/video1.MOV" type="video/quicktime">
                 </video>
             </div>
 
             <div class="slide">
-                <div class="caption">¿YA SOMOS SOCIOS O QUÉ?</div>
+                <div class="bg-ghost" style="background-image: url('media/image1.png');"></div>
+                <div class="tag">PÓRTESE SERIO</div>
                 <img src="media/image1.png" alt="2">
             </div>
 
             <div class="slide">
-                <div class="caption">ESTA FOTO ES RANDOM</div>
+                <div class="bg-ghost" style="background-image: url('media/image2.png');"></div>
+                <div class="tag">VALE POR 1 POLA</div>
                 <img src="media/image2.png" alt="3">
             </div>
+        </div>
 
-            <div class="slide">
-                <div class="caption">VALE POR UNA POLA</div>
-                <img src="media/image3.png" alt="4">
-            </div>
+        <div class="footer-action">
+            <button class="btn-game" onclick="alert('Bien ahí, socio. ¡Hablemos!')">BORRÓN Y CUENTA NUEVA</button>
+            <button class="btn-game" style="color: #444;" onclick="location.reload()">REINTENTAR</button>
         </div>
     </div>
 
-    <audio id="musica" loop>
+    <audio id="a" loop>
         <source src="media/musica.mp3" type="audio/mpeg">
     </audio>
 
     <script>
-        let index = 0;
+        let cur = 0;
         const slides = document.querySelectorAll('.slide');
-        const video = document.getElementById('vid');
-        const btnNo = document.getElementById('btn-no');
+        const video = document.getElementById('v');
+        const audio = document.getElementById('a');
 
-        function start() {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('musica').play();
-            setInterval(() => move(1), 5000);
+        // Esta función es la que "despierta" el audio en iPhone
+        function unlock() {
+            audio.play().catch(e => console.log("Audio ready"));
+            document.getElementById('entry-gate').style.display = 'none';
+            // Auto slider cada 4 segundos
+            setInterval(() => move(1), 4000);
         }
 
-        function move(step) {
-            slides[index].classList.remove('active');
+        function move(dir) {
+            slides[cur].classList.remove('active');
             video.pause();
-            index = (index + step + slides.length) % slides.length;
-            slides[index].classList.add('active');
-            if (slides[index].contains(video)) video.play();
+            
+            cur = (cur + dir + slides.length) % slides.length;
+            slides[cur].classList.add('active');
+
+            // Actualizar fondo borroso si es imagen
+            const img = slides[cur].querySelector('img');
+            if(img) {
+                slides[cur].querySelector('.bg-ghost').style.backgroundImage = `url(${img.src})`;
+            }
+
+            if (slides[cur].contains(video)) {
+                video.play();
+            }
         }
 
-        // El botón que escapa (Solo para molestar)
-        btnNo.addEventListener('mouseover', () => {
-            const x = Math.random() * (window.innerWidth - 100);
-            const y = Math.random() * (window.innerHeight - 50);
-            btnNo.style.position = 'fixed';
-            btnNo.style.left = x + 'px';
-            btnNo.style.top = y + 'px';
+        // Swipe básico para celular
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            let touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) move(1);
+            if (touchStartX - touchEndX < -50) move(-1);
         });
     </script>
 </body>
